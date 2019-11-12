@@ -26,6 +26,7 @@ Stu *inputStuInfo();
 void printStuInfo(Stu *info);
 void printMenu();
 Node *addStuInfo(Stu *info, Node *list);
+void printNoStu();
 
 /*
  初始化链表
@@ -66,6 +67,9 @@ Stu *inputStuInfo() {
     return info;
 }
 
+/**
+ * 把学生信息添加到list
+ */
 Node *addStuInfo(Stu *info, Node *list) {
     if (list->info == NULL) {
         list->info = info;
@@ -85,11 +89,70 @@ Node *addStuInfo(Stu *info, Node *list) {
 }
 
 /**
+ * 根据学号 移除学生信息
+ */
+Node *removeStuInfo(char *no, Node *list) {
+    Node *preNode = list;
+    Node *tmp = list;
+    int searched = 0;
+    while (tmp) {
+        if (strcmp(no, tmp->info->no) == 0) {
+            searched++;
+            if (tmp == preNode) {
+                // 第一个节点
+                tmp=tmp->next;
+                free(preNode);
+                preNode = NULL;
+                return tmp;
+            }
+            
+            preNode->next = tmp->next;
+            free(tmp);
+            tmp=NULL;
+            break;
+        } else {
+            preNode = tmp;
+            tmp = tmp->next;
+        }
+    }
+    if (searched == 0) {
+        printNoStu();
+    }
+    
+    return list;
+}
+
+/**
+ * 根据学号 搜索学生信息
+ */
+Stu *searchStu(char *no, Node *list) {
+    Stu *result = NULL;
+    Node *tmp = list;
+    int searched = 0;
+    while (tmp) {
+        if (strcmp(no, tmp->info->no) == 0) {
+            searched++;
+            result = tmp->info;
+            break;
+        } 
+        tmp = tmp->next;
+    }
+    if (searched == 0) {
+        printNoStu();
+    }
+    return result;
+}
+
+void printNoStu() {
+    printf("没有找到学生信息");
+}
+
+/**
  打印指定学生信息
  */
 void printStuInfo(Stu *info) {
     if (info) {
-        printf("No:%s Name:%s Score:%.2f\n", info->no, info->name, info->englishScore);
+        printf("学号:%s 姓名:%s 成绩:%.2f\n", info->no, info->name, info->englishScore);
     } else {
         printf("空\n");
     }
@@ -112,7 +175,7 @@ void printList(Node *head) {
  */
 void printMenu() {
     printf("\n************************************\n\n");
-    printf("请输入数字\n 1. 打印成绩\n 2. 输入成绩\n 0. 退出程序\n");
+    printf("请输入数字\n 1. 打印成绩\n 2. 输入信息\n 3. 删除信息\n 4. 搜索信息\n 0. 退出程序\n");
 }
 
 /**
@@ -132,6 +195,19 @@ void getCommand() {
                 printf("\n请输入学生信息：\n\n");
                 Stu *newStuInfo = inputStuInfo();
                 list = addStuInfo(newStuInfo, list);
+                break;
+            case 3:
+                printf("\n请输入学号：\n\n");
+                char no[20];
+                scanf("%s", no);
+                list = removeStuInfo(no, list);
+                break;
+            case 4:
+                printf("\n请输入学号：\n\n");
+                char searchNo[20];
+                scanf("%s", searchNo);
+                Stu *student = searchStu(searchNo, list);
+                printStuInfo(student);
                 break;
             case 0:
                 printf("\n退出程序\n");
