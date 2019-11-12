@@ -143,6 +143,31 @@ Stu *searchStu(char *no, Node *list) {
     return result;
 }
 
+/**
+ * 保存到文件
+ */
+void saveListToFile(Node *list) {
+    FILE *w = fopen("students.txt", "a");
+    if (w == NULL) {
+        printf("打开文件失败！");
+        return;
+    }
+
+    Node *tmp = list;
+    while (tmp) {
+        char gender[5];
+        if (tmp->info->gender == 0) {
+            strcpy(gender, "女");
+        } else {
+            strcpy(gender, "男");
+        }
+        fprintf(w, "学号：%-12s 姓名：%-10s 性别：%-4s 成绩：%.2f\n", tmp->info->no, tmp->info->name, gender, tmp->info->englishScore);
+        tmp = tmp->next;
+    }
+    fclose(w);
+    printf("\n保存成功！\n");
+}
+
 void printNoStu() {
     printf("没有找到学生信息");
 }
@@ -175,7 +200,7 @@ void printList(Node *head) {
  */
 void printMenu() {
     printf("\n************************************\n\n");
-    printf("请输入数字\n 1. 打印成绩\n 2. 输入信息\n 3. 删除信息\n 4. 搜索信息\n 0. 退出程序\n");
+    printf("请输入数字\n 1. 打印成绩\n 2. 输入信息\n 3. 删除信息\n 4. 搜索信息\n 5. 保存到文件\n 0. 退出程序\n");
 }
 
 /**
@@ -209,6 +234,8 @@ void getCommand() {
                 Stu *student = searchStu(searchNo, list);
                 printStuInfo(student);
                 break;
+            case 5:
+                saveListToFile(list);
             case 0:
                 printf("\n退出程序\n");
                 break;
