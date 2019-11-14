@@ -3,29 +3,31 @@
 #include <sys/malloc.h>
 #include <string.h>
 
+#define StudentsFileName "students.txt"
+
 /*
  学生信息
  */
 typedef struct student {
-	int id;		// id 内部使用，外部不用知道
+	int id;		    // id 内部使用，外部不用知道
 	char no[20];	// 学号
     char name[20];	// 姓名
-	int gender;	// 性别 1男 2女
+	int gender;	    // 性别 1男 2女
     float englishScore; // 英语成绩
-} Stu;
+} Student;
 
 /*
  链表节点
  */
 typedef struct node {
-	Stu *info;	// 节点信息
+	Student *info;	// 节点信息
 	struct node *next;	// 下一个节点
 } Node;
 
-Stu *inputStuInfo();
-void printStuInfo(Stu *info);
+Student *inputStuInfo();
+void printStuInfo(Student *info);
 void printMenu();
-Node *addStuInfo(Stu *info, Node *list);
+Node *addStuInfo(Student *info, Node *list);
 void printNoStu();
 
 /*
@@ -41,8 +43,8 @@ Node *createList() {
 /***
  输入学生信息
  */
-Stu *inputStuInfo() {
-    Stu *info = (Stu *)malloc(sizeof(Stu));
+Student *inputStuInfo() {
+    Student *info = (Student *)malloc(sizeof(Student));
 
     printf("姓名：");
     char name[20];
@@ -70,7 +72,7 @@ Stu *inputStuInfo() {
 /**
  * 把学生信息添加到list
  */
-Node *addStuInfo(Stu *info, Node *list) {
+Node *addStuInfo(Student *info, Node *list) {
     if (list->info == NULL) {
         list->info = info;
         return list;
@@ -125,8 +127,8 @@ Node *removeStuInfo(char *no, Node *list) {
 /**
  * 根据学号 搜索学生信息
  */
-Stu *searchStu(char *no, Node *list) {
-    Stu *result = NULL;
+Student *searchStu(char *no, Node *list) {
+    Student *result = NULL;
     Node *tmp = list;
     int searched = 0;
     while (tmp) {
@@ -146,8 +148,8 @@ Stu *searchStu(char *no, Node *list) {
 /**
  * 保存到文件
  */
-void saveListToFile(Node *list) {
-    FILE *w = fopen("students.txt", "a");
+void saveFile(Node *list) {
+    FILE *w = fopen(StudentsFileName, "a");
     if (w == NULL) {
         printf("打开文件失败！");
         return;
@@ -161,11 +163,28 @@ void saveListToFile(Node *list) {
         } else {
             strcpy(gender, "男");
         }
-        fprintf(w, "学号：%-12s 姓名：%-10s 性别：%-4s 成绩：%.2f\n", tmp->info->no, tmp->info->name, gender, tmp->info->englishScore);
+        fprintf(w, "学号：%-12s 姓名：%-s 性别：%-4s 成绩：%.2f\n", tmp->info->no, tmp->info->name, gender, tmp->info->englishScore);
         tmp = tmp->next;
     }
     fclose(w);
     printf("\n保存成功！\n");
+}
+
+void readFile(Node *list) {
+    FILE *fr;  
+    if ((fr=fopen(StudentsFileName,"a"))==NULL)  
+        printf("文件打开失败!!!\n");  
+    fseek(fr,0,SEEK_SET);  
+
+    Student *info = (Student *)malloc(sizeof(Student));
+    char name[100];
+    char no[100];
+    char gender[100];
+    float score;
+    fscanf(fr, "%s %s %f", name, no, &score);
+    printf("%s  %s", name, no);
+
+    fclose(fr);  
 }
 
 void printNoStu() {
@@ -175,7 +194,7 @@ void printNoStu() {
 /**
  打印指定学生信息
  */
-void printStuInfo(Stu *info) {
+void printStuInfo(Student *info) {
     if (info) {
         printf("学号:%s 姓名:%s 成绩:%.2f\n", info->no, info->name, info->englishScore);
     } else {
@@ -200,7 +219,7 @@ void printList(Node *head) {
  */
 void printMenu() {
     printf("\n************************************\n\n");
-    printf("请输入数字\n 1. 打印成绩\n 2. 输入信息\n 3. 删除信息\n 4. 搜索信息\n 5. 保存到文件\n 0. 退出程序\n");
+    printf("请输入数字\n 1. 打印成绩\n 2. 输入信息\n 3. 删除信息\n 4. 搜索信息\n 5. 保存到文件\n 6. 读取文件\n 0. 退出程序\n");
 }
 
 /**
@@ -208,6 +227,7 @@ void printMenu() {
  */
 void getCommand() {
     Node *list = createList();
+    Node *fileList;
     int qId = 1;
     while(1) {
         scanf("%d", &qId);
@@ -218,7 +238,7 @@ void getCommand() {
                 break;
             case 2:
                 printf("\n请输入学生信息：\n\n");
-                Stu *newStuInfo = inputStuInfo();
+                Student *newStuInfo = inputStuInfo();
                 list = addStuInfo(newStuInfo, list);
                 break;
             case 3:
@@ -231,11 +251,15 @@ void getCommand() {
                 printf("\n请输入学号：\n\n");
                 char searchNo[20];
                 scanf("%s", searchNo);
-                Stu *student = searchStu(searchNo, list);
+                Student *student = searchStu(searchNo, list);
                 printStuInfo(student);
                 break;
             case 5:
-                saveListToFile(list);
+                saveFile(list);
+                break;
+            case 6:
+                readFile(fileList);
+                break;
             case 0:
                 printf("\n退出程序\n");
                 break;
