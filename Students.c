@@ -32,6 +32,8 @@ void printNoStu();
 char *genderStringFromInt(int gender);
 int genderIntFromString(char *gender);
 void checkTitle(FILE *fp);
+void lockFile(char *pwd);
+void unlockFile(char *pwd);
 
 /*
  初始化链表
@@ -148,6 +150,10 @@ Student *searchStu(char *no, Node *list) {
     return result;
 }
 
+void printOpenFileFail() {
+    printf("打开文件失败！");
+}
+
 /**
  * 保存到文件
  */
@@ -159,7 +165,7 @@ void saveFile(Node *list) {
     
     FILE *fp = fopen(StudentsFileName, "a+");
     if (fp == NULL) {
-        printf("打开文件失败！");
+        printOpenFileFail();
         return;
     }
     fseek(fp,0,SEEK_SET);  
@@ -215,7 +221,7 @@ int genderIntFromString(char *gender) {
 Node *readFile() {
     FILE *fp;  
     if ((fp=fopen(StudentsFileName,"a+"))==NULL)  
-        printf("文件打开失败!!!\n");  
+        printOpenFileFail();
     
     fseek(fp,0,SEEK_SET);  
 
@@ -278,7 +284,7 @@ void printList(Node *head) {
  */
 void printMenu() {
     printf("\n************************************\n\n");
-    printf("请输入数字\n 1. 打印成绩\n 2. 输入信息\n 3. 删除信息\n 4. 搜索信息\n 5. 保存到文件\n 6. 读取文件\n 0. 退出程序\n");
+    printf("请输入数字\n 1. 打印成绩\n 2. 输入信息\n 3. 删除信息\n 4. 搜索信息\n 5. 保存到文件\n 6. 读取文件\n 7. 加密文件\n 8. 解密文件\n 0. 退出程序\n");
 }
 
 /**
@@ -325,6 +331,14 @@ void getCommand() {
                 printList(list);
                 break;
             }
+            case 7: {
+                lockFile("abc");
+                break;
+            }
+            case 8: {
+                unlockFile("abc");
+                break;
+            }
             case 0: {
                 printf("\n退出程序\n");
                 break;
@@ -344,4 +358,38 @@ int main() {
     printMenu();
     getCommand();
 	return 0;
+}
+
+void lockFile(char *pwd) {
+	FILE *fpr, *fpw;
+	
+	char ch, key=0xfa; //初始密钥 
+
+	if((fpr=fopen(StudentsFileName, "rb"))==NULL || (fpw=fopen(StudentsFileName, "rb+"))==NULL) {
+        printOpenFileFail();
+		return;
+	 } 
+	 
+	 while((ch=fgetc(fpr))!=EOF) {
+	 	fputc(ch^key, fpw);
+        key = ch;
+	 } 
+	 fclose(fpr);
+	 fclose(fpw);
+}
+
+void unlockFile(char *pwd) {
+	FILE *fr, *fw;
+	char ch, key=0xfa;
+	if((fr=fopen(StudentsFileName, "rb"))==NULL || (fw=fopen(StudentsFileName, "rb+"))==NULL) {
+        printOpenFileFail();
+		return;
+	} 
+	 
+	while((ch=fgetc(fr)) != EOF) {
+	    fputc(ch^key, fw);
+	    key = ch^key;
+	} 
+	fclose(fr);
+	fclose(fw);
 }
