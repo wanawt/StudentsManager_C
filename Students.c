@@ -29,6 +29,9 @@ void printStuInfo(Student *info);
 void printMenu();
 Node *addStuInfo(Student *info, Node *list);
 void printNoStu();
+char *genderStringFromInt(int gender);
+int genderIntFromString(char *gender);
+void checkTitle(FILE *fp);
 
 /*
  初始化链表
@@ -149,31 +152,67 @@ Student *searchStu(char *no, Node *list) {
  * 保存到文件
  */
 void saveFile(Node *list) {
-    FILE *w = fopen(StudentsFileName, "a");
-    if (w == NULL) {
+    FILE *fp = fopen(StudentsFileName, "a+");
+    if (fp == NULL) {
         printf("打开文件失败！");
         return;
     }
+    fseek(fp,0,SEEK_SET);  
+
+    checkTitle(fp);
 
     Node *tmp = list;
     while (tmp) {
-        char gender[5];
-        if (tmp->info->gender == 0) {
-            strcpy(gender, "女");
-        } else {
-            strcpy(gender, "男");
-        }
-        fprintf(w, "学号：%-12s 姓名：%-s 性别：%-4s 成绩：%.2f\n", tmp->info->no, tmp->info->name, gender, tmp->info->englishScore);
+        char *gender = genderStringFromInt(tmp->info->gender);
+        fprintf(fp, "%s,%s,%s,%.2f\n", tmp->info->no, tmp->info->name, gender, tmp->info->englishScore);
         tmp = tmp->next;
     }
-    fclose(w);
+    fclose(fp);
     printf("\n保存成功！\n");
 }
 
+/**
+ * 看有没有标题，如果没有，加上
+ */
+void checkTitle(FILE *fp) {
+    char title[30];
+    fscanf(fp, "%s", title);
+    printf("\n%s\n", title);
+    if (strcmp(title, "学号,姓名,性别,成绩") != 0) {
+        fprintf(fp, "学号,姓名,性别,成绩\n");
+    }
+}
+
+/**
+ * 将性别 整型 转为 字符
+ * 0 -> 女   1 -> 男
+ */
+char *genderStringFromInt(int gender) {
+    if (gender == 0) {
+        return "女";
+    }
+    return "男";
+}
+
+/**
+ * 将性别 字符 转为 整型 
+ * 女 -> 0   男 -> 1
+ */
+int genderIntFromString(char *gender) {
+    if (strcmp(gender, "女")) {
+        return 0;
+    }
+    return 1;
+}
+
+/**
+ * 读取文件
+ */
 void readFile(Node *list) {
     FILE *fr;  
-    if ((fr=fopen(StudentsFileName,"a"))==NULL)  
+    if ((fr=fopen(StudentsFileName,"a+"))==NULL)  
         printf("文件打开失败!!!\n");  
+    
     fseek(fr,0,SEEK_SET);  
 
     Student *info = (Student *)malloc(sizeof(Student));
@@ -181,7 +220,7 @@ void readFile(Node *list) {
     char no[100];
     char gender[100];
     float score;
-    fscanf(fr, "%s %s %f", name, no, &score);
+    fscanf(fr, "%s,%s,%f", name, no, &score);
     printf("%s  %s", name, no);
 
     fclose(fr);  
@@ -232,37 +271,44 @@ void getCommand() {
     while(1) {
         scanf("%d", &qId);
         switch(qId) {
-            case 1:
+            case 1: {
                 printf("\n打印学生成绩：\n\n");
                 printList(list);
                 break;
-            case 2:
+            }
+            case 2: {
                 printf("\n请输入学生信息：\n\n");
                 Student *newStuInfo = inputStuInfo();
                 list = addStuInfo(newStuInfo, list);
                 break;
-            case 3:
+            }
+            case 3: {
                 printf("\n请输入学号：\n\n");
                 char no[20];
                 scanf("%s", no);
                 list = removeStuInfo(no, list);
                 break;
-            case 4:
+            }
+            case 4: {
                 printf("\n请输入学号：\n\n");
                 char searchNo[20];
                 scanf("%s", searchNo);
                 Student *student = searchStu(searchNo, list);
                 printStuInfo(student);
                 break;
-            case 5:
+            }
+            case 5: {
                 saveFile(list);
                 break;
-            case 6:
+            }
+            case 6: {
                 readFile(fileList);
                 break;
-            case 0:
+            }
+            case 0: {
                 printf("\n退出程序\n");
                 break;
+            }
         }
         if(qId <= 0) {
             break;
