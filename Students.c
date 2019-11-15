@@ -152,6 +152,11 @@ Student *searchStu(char *no, Node *list) {
  * 保存到文件
  */
 void saveFile(Node *list) {
+    if (list == NULL || list->info == NULL) {
+        printf("请先添加学生信息！\n");
+        return;
+    }
+    
     FILE *fp = fopen(StudentsFileName, "a+");
     if (fp == NULL) {
         printf("打开文件失败！");
@@ -177,7 +182,6 @@ void saveFile(Node *list) {
 void checkTitle(FILE *fp) {
     char title[30];
     fscanf(fp, "%s", title);
-    printf("\n%s\n", title);
     if (strcmp(title, "学号,姓名,性别,成绩") != 0) {
         fprintf(fp, "学号,姓名,性别,成绩\n");
     }
@@ -250,7 +254,7 @@ void printNoStu() {
  */
 void printStuInfo(Student *info) {
     if (info) {
-        printf("学号:%s 姓名:%s 成绩:%.2f\n", info->no, info->name, info->englishScore);
+        printf("学号:%s 姓名:%s 性别:%s 成绩:%.2f\n", info->no, info->name, genderStringFromInt(info->gender), info->englishScore);
     } else {
         printf("空\n");
     }
@@ -317,8 +321,8 @@ void getCommand() {
                 break;
             }
             case 6: {
-                Node *fileList = readFile();
-                printList(fileList);
+                list = readFile();
+                printList(list);
                 break;
             }
             case 0: {
