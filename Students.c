@@ -2,27 +2,7 @@
 #include <stdlib.h>
 #include <sys/malloc.h>
 #include <string.h>
-
-#define StudentsFileName "students.txt"
-
-/*
- 学生信息
- */
-typedef struct student {
-	int id;		    // id 内部使用，外部不用知道
-	char no[20];	// 学号
-    char name[20];	// 姓名
-	int gender;	    // 性别 1男 2女
-    float englishScore; // 英语成绩
-} Student;
-
-/*
- 链表节点
- */
-typedef struct node {
-	Student *info;	// 节点信息
-	struct node *next;	// 下一个节点
-} Node;
+#include "header.h"
 
 Student *inputStuInfo();
 void printStuInfo(Student *info);
@@ -30,7 +10,7 @@ void printMenu();
 Node *addStuInfo(Student *info, Node *list);
 void printNoStu();
 char *genderStringFromInt(int gender);
-int genderIntFromString(char *gender);
+int  genderIntFromString(char *gender);
 void checkTitle(FILE *fp);
 void lockFile(char *pwd);
 void unlockFile(char *pwd);
@@ -360,27 +340,33 @@ int main() {
 	return 0;
 }
 
+/**
+ * 加密
+ */
 void lockFile(char *pwd) {
-	FILE *fpr, *fpw;
-	
-	char ch, key=0xfa; //初始密钥 
+	FILE *fr, *fw;
+	char ch, key=0xfa;
 
-	if((fpr=fopen(StudentsFileName, "rb"))==NULL || (fpw=fopen(StudentsFileName, "rb+"))==NULL) {
+	if((fr=fopen(StudentsFileName, "rb"))==NULL || (fw=fopen(StudentsFileName, "rb+"))==NULL) {
         printOpenFileFail();
 		return;
 	 } 
 	 
-	 while((ch=fgetc(fpr))!=EOF) {
-	 	fputc(ch^key, fpw);
+	 while((ch=fgetc(fr))!=EOF) {
+	 	fputc(ch^key, fw);
         key = ch;
 	 } 
-	 fclose(fpr);
-	 fclose(fpw);
+	 fclose(fr);
+	 fclose(fw);
 }
 
+/**
+ * 解密
+ */
 void unlockFile(char *pwd) {
 	FILE *fr, *fw;
 	char ch, key=0xfa;
+
 	if((fr=fopen(StudentsFileName, "rb"))==NULL || (fw=fopen(StudentsFileName, "rb+"))==NULL) {
         printOpenFileFail();
 		return;
