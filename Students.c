@@ -218,8 +218,7 @@ Node *readFile() {
     char title[30];
     fscanf(fp, "%s", title);
 
-    Node *head = NULL;
-    Node *preNode = NULL;
+    Node *list = createList();
 
     char no[20];
     char name[20];
@@ -234,23 +233,12 @@ Node *readFile() {
         strcpy(info->name, name);
         info->englishScore = score;
         info->gender = genderIntFromString(gender);
-
-        Node *node = (Node *)malloc(sizeof(Node));
-        node->info = info;
-        node->next = NULL;
-
-        if (head == NULL) {
-            head = node;
-            preNode = node;
-        } else {
-            preNode->next = node;
-            preNode = node;
-        }
+        addStuInfo(info, list);
     }
     fclose(fp);
 
     printf("读取完毕！\n");
-    return head;
+    return list;
 }
 
 void printNoStu() {
