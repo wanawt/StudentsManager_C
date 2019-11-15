@@ -164,7 +164,7 @@ void saveFile(Node *list) {
     Node *tmp = list;
     while (tmp) {
         char *gender = genderStringFromInt(tmp->info->gender);
-        fprintf(fp, "%s,%s,%s,%.2f\n", tmp->info->no, tmp->info->name, gender, tmp->info->englishScore);
+        fprintf(fp, "%s %s %s %.2f\n", tmp->info->no, tmp->info->name, gender, tmp->info->englishScore);
         tmp = tmp->next;
     }
     fclose(fp);
@@ -208,22 +208,49 @@ int genderIntFromString(char *gender) {
 /**
  * 读取文件
  */
-void readFile(Node *list) {
-    FILE *fr;  
-    if ((fr=fopen(StudentsFileName,"a+"))==NULL)  
+Node *readFile() {
+    FILE *fp;  
+    if ((fp=fopen(StudentsFileName,"a+"))==NULL)  
         printf("文件打开失败!!!\n");  
     
-    fseek(fr,0,SEEK_SET);  
+    fseek(fp,0,SEEK_SET);  
 
-    Student *info = (Student *)malloc(sizeof(Student));
-    char name[100];
-    char no[100];
-    char gender[100];
+    char title[30];
+    fscanf(fp, "%s", title);
+
+    Node *head = NULL;
+    Node *preNode = NULL;
+
+    char no[20];
+    char name[20];
+    char gender[10];
     float score;
-    fscanf(fr, "%s,%s,%f", name, no, &score);
-    printf("%s  %s", name, no);
+    
+    printf("\n读取中...\n");
 
-    fclose(fr);  
+    while (fscanf(fp, "%s %s %s %f", no, name, gender, &score) == 4) {
+        Student *info = (Student *)malloc(sizeof(Student));
+        strcpy(info->no, no);
+        strcpy(info->name, name);
+        info->englishScore = score;
+        info->gender = genderIntFromString(gender);
+
+        Node *node = (Node *)malloc(sizeof(Node));
+        node->info = info;
+        node->next = NULL;
+
+        if (head == NULL) {
+            head = node;
+            preNode = node;
+        } else {
+            preNode->next = node;
+            preNode = node;
+        }
+    }
+    fclose(fp);
+
+    printf("读取完毕！\n");
+    return head;
 }
 
 void printNoStu() {
@@ -245,12 +272,13 @@ void printStuInfo(Student *info) {
  打印list中的学生信息
  */
 void printList(Node *head) {
+    printf("\n开始打印...\n\n");
     Node *tmp = head;
     while (tmp) {
         printStuInfo(tmp->info);
         tmp = tmp->next;
     }
-    printf("\n");
+    printf("\n结束打印...\n");
 }
 
 /**
@@ -266,7 +294,6 @@ void printMenu() {
  */
 void getCommand() {
     Node *list = createList();
-    Node *fileList;
     int qId = 1;
     while(1) {
         scanf("%d", &qId);
@@ -302,7 +329,8 @@ void getCommand() {
                 break;
             }
             case 6: {
-                readFile(fileList);
+                Node *fileList = readFile();
+                printList(fileList);
                 break;
             }
             case 0: {
